@@ -341,7 +341,18 @@ ${links.slice(0, 10).map(l => `- ${l.text || 'No text'}: ${l.href}`).join('\n') 
 
 USER QUESTION: ${question}
 
-Answer based on the actual page content above. If the question is about security, give a security assessment. If it's about page content or features, answer from what you can see in the page data.`;
+FORMATTING RULES (strictly follow):
+- Do NOT use markdown tables (no | pipe characters for tables).
+- Do NOT use markdown code blocks.
+- Use plain text only.
+- Use ### for section headings.
+- Use bullet points (- item) for lists.
+- Use **bold** for important terms.
+- For security assessments, structure your answer as:
+  ### Overall Verdict\n[Safe/Warning/Danger] — [one sentence summary]
+  ### Key Findings\n- Finding 1\n- Finding 2\n  ### Recommendation\n[what the user should do]
+
+Answer based on the actual page content above. Be clear, specific, and helpful.`;
 }
 
 function createLegacyPrompt(question, pageData) {
@@ -368,6 +379,17 @@ FORMS:
 ${forms.length > 0 ? forms.map((f, i) => `Form ${i + 1}: action="${f.action}", inputs: ${f.inputs.map(inp => inp.type + '(' + inp.name + ')').join(', ')}`).join('\n') : 'No forms found'}
 
 USER QUESTION: ${question}
+
+FORMATTING RULES (strictly follow):
+- Do NOT use markdown tables (no | pipe characters for tables).
+- Do NOT use markdown code blocks.
+- Use plain text only.
+- Use ### for section headings.
+- Use bullet points (- item) for lists.
+- Use **bold** for important terms.
+- For security assessments, structure your answer as:
+  ### Overall Verdict\n[Safe/Warning/Danger] — [one sentence summary]
+  ### Key Findings\n- Finding 1\n- Finding 2\n  ### Recommendation\n[what the user should do]
 
 Answer based on the actual page content above. Be specific and reference actual content from the page when possible.`;
 }

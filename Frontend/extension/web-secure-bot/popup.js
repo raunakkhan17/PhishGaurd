@@ -352,142 +352,99 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   function formatBotResponse(text) {
-    console.log('🔧 Formatting bot response, text length:', text?.length || 0);
-    
-    if (!text) {
-      console.warn('⚠️ Empty text provided to formatBotResponse');
-      return '<p>No response content</p>';
-    }
+    if (!text) return '<p class="bot-p">No response content</p>';
 
-    let html = '';
     const lines = text.split('\n');
-    let i = 0;
-    let inTable = false;
-    let tableHtml = '';
-    let tableHeaders = [];
-    let inList = false;
-    let listItems = [];
-    let listOrdered = false;
+    let html = '';
+    let listBuffer  = [];   // pending bullet/numbered list items
+    let tableRows   = [];   // pending table rows (arrays of cell strings)
+    let tableIsOpen = false;
 
-    function flushAll() {
-      flushList();
-      flushTable();
+    /* ---- helpers ---- */
+    function fmt(t) {                         // inline markdown → HTML
+      return t
+        .replace(/✅/g,  '<span class="badge badge-safe">✅ Safe</span>')
+        .replace(/⚠️/g,  '<span class="badge badge-warn">⚠️ Warning</span>')
+        .replace(/🚨/g,  '<span class="badge badge-danger">🚨 Danger</span>')
+        .replace(/⚪/g,  '<span class="badge badge-neutral">⚪ Neutral</span>')
+        .replace(/❌/g,  '<span class="badge badge-danger">❌ Risk</span>')
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g,    '<em>$1</em>')
+        .replace(/`([^`]+)`/g,    '<code class="inline-code">$1</code>');
     }
-
 
     function flushList() {
-      if (!inList || listItems.length === 0) return;
-      const tag = listOrdered ? 'ol' : 'ul';
-      html += `<${tag} class="bot-list">${listItems.map(li => `<li>${li}</li>`).join('')}</${tag}>`;
-      listItems = [];
-      inList = false;
-      listOrdered = false;
+      if (!listBuffer.length) return;
+      html += '<ul class="bot-list">' + listBuffer.map(li => `<li>${li}</li>`).join('') + '</ul>';
+      listBuffer = [];
     }
 
     function flushTable() {
-      if (!inTable) return;
-      html += `<div class="bot-table-wrap"><table class="bot-table"><thead><tr>${tableHeaders.map(h => `<th>${inline(h)}</th>`).join('')}</tr></thead><tbody>${tableHtml}</tbody></table></div>`;
-      tableHtml = '';
-      tableHeaders = [];
-      inTable = false;
+      if (!tableRows.length) return;
+      const [head, ...body] = tableRows;
+      const thHtml = head.map(h => `<th>${fmt(h)}</th>`).join('');
+      const tbHtml = body.map(row =>
+        '<tr>' + row.map(c => `<td>${fmt(c)}</td>`).join('') + '</tr>'
+      ).join('');
+      html += `<div class="bot-table-wrap"><table class="bot-table"><thead><tr>${thHtml}</tr></thead><tbody>${tbHtml}</tbody></table></div>`;
+      tableRows   = [];
+      tableIsOpen = false;
     }
 
-    function inline(t) {
-      return t
-        .replace(/✅\s*/g, '<span class="badge badge-safe">✅ Safe</span> ')
-        .replace(/⚠️\s*/g, '<span class="badge badge-warn">⚠️ Warning</span> ')
-        .replace(/🚨\s*/g, '<span class="badge badge-danger">🚨 Danger</span> ')
-        .replace(/⚪\s*/g, '<span class="badge badge-neutral">⚪ Neutral</span> ')
-        .replace(/❌\s*/g, '<span class="badge badge-danger">❌ Failed</span> ')
-        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-        .replace(/__(.*?)__/g, '<strong>$1</strong>')
-        .replace(/\*(.*?)\*/g, '<em>$1</em>')
-        .replace(/`([^`]+)`/g, '<code class="inline-code">$1</code>')
-        .replace(/\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
-    }
+    function flushAll() { flushList(); flushTable(); }
 
-    while (i < lines.length) {
-      const line = lines[i];
-      const trimmed = line.trim();
+    /* ---- main loop ---- */
+    for (const raw of lines) {
+      const line = raw.trim();
 
-      // Markdown table detection — any line that starts AND ends with |
-      if (trimmed.startsWith('|') && trimmed.endsWith('|')) {
-        const cells = trimmed.slice(1, -1).split('|').map(c => c.trim());
-        const isSeparator = cells.every(c => /^[-: ]+$/.test(c));
-
-        if (isSeparator) {
-          // Separator row — skip it entirely
-          i++;
-          continue;
-        }
-
-        if (!inTable) {
-          // First real row = header row
-          flushList();
-          tableHeaders = cells;
-          inTable = true;
-        } else {
-          // Subsequent rows = body rows
-          tableHtml += `<tr>${cells.map(c => `<td>${inline(c)}</td>`).join('')}</tr>`;
-        }
-        i++;
+      /* — pipe table row — */
+      if (line.startsWith('|') && line.endsWith('|')) {
+        const isSep = /^\|[\s\-|:]+\|$/.test(line);  // separator row (|---|---|)
+        if (isSep) { tableIsOpen = true; continue; }  // skip separator, mark table open
+        const cells = line.slice(1, -1).split('|').map(c => c.trim());
+        flushList();                   // close any open list before table
+        tableRows.push(cells);
+        tableIsOpen = true;
         continue;
       }
 
-      // Not a table line — flush any open table first
-      flushTable();
+      /* non-table line — flush pending table */
+      if (tableIsOpen) flushTable();
 
-      // Headings
-      const h3 = trimmed.match(/^###\s+(.*)/);
-      const h2 = trimmed.match(/^##\s+(.*)/);
-      const h1 = trimmed.match(/^#\s+(.*)/);
-      if (h3) { flushList(); html += `<h4 class="bot-h3">${inline(h3[1])}</h4>`; i++; continue; }
-      if (h2) { flushList(); html += `<h3 class="bot-h2">${inline(h2[1])}</h3>`; i++; continue; }
-      if (h1) { flushList(); html += `<h2 class="bot-h1">${inline(h1[1])}</h2>`; i++; continue; }
-
-      // Horizontal rule
-      if (/^---+$/.test(trimmed)) {
-        flushList();
-        html += `<hr class="bot-hr">`;
-        i++; continue;
-      }
-
-      // Ordered list
-      const olMatch = trimmed.match(/^\d+\.\s+(.*)/);
-      if (olMatch) {
-        if (!inList || !listOrdered) { flushList(); inList = true; listOrdered = true; }
-        listItems.push(inline(olMatch[1]));
-        i++; continue;
-      }
-
-      // Unordered list
-      const ulMatch = trimmed.match(/^[\*\-•]\s+(.*)/);
-      if (ulMatch) {
-        if (!inList || listOrdered) { flushList(); inList = true; listOrdered = false; }
-        listItems.push(inline(ulMatch[1]));
-        i++; continue;
-      }
-
-      // Empty line
-      if (trimmed === '') {
+      /* — empty line — */
+      if (line === '') {
         flushAll();
-        html += `<div class="bot-spacer"></div>`;
-        i++; continue;
+        html += '<div class="bot-spacer"></div>';
+        continue;
       }
 
-      // Normal paragraph
+      /* — headings — */
+      if (line.startsWith('### ')) { flushList(); html += `<h4 class="bot-h3">${fmt(line.slice(4))}</h4>`; continue; }
+      if (line.startsWith('## '))  { flushList(); html += `<h3 class="bot-h2">${fmt(line.slice(3))}</h3>`; continue; }
+      if (line.startsWith('# '))   { flushList(); html += `<h2 class="bot-h1">${fmt(line.slice(2))}</h2>`; continue; }
+
+      /* — horizontal rule — */
+      if (/^---+$/.test(line)) { flushList(); html += '<hr class="bot-hr">'; continue; }
+
+      /* — unordered list — */
+      if (/^[-*•]\s/.test(line)) { listBuffer.push(fmt(line.replace(/^[-*•]\s+/, ''))); continue; }
+
+      /* — ordered list — */
+      if (/^\d+\.\s/.test(line)) { listBuffer.push(fmt(line.replace(/^\d+\.\s+/, ''))); continue; }
+
+      /* — normal paragraph — */
       flushList();
-      html += `<p class="bot-p">${inline(trimmed)}</p>`;
-      i++;
+      html += `<p class="bot-p">${fmt(line)}</p>`;
     }
 
     flushAll();
-
-    console.log('✅ Bot response formatted successfully');
     return html;
   }
 
+
+
   function setLoading(loading) {
+
 
     console.log(`⏳ Setting loading state: ${loading}`);
     
