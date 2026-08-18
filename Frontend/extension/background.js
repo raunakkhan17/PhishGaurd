@@ -1,7 +1,7 @@
 // Background Service Worker for Website Security Scanner
 class SecurityScanner {
   constructor() {
-    this.baseURL = 'https://27f9-2405-201-3032-8ea-5e5-4cf8-2d6f-96ce.ngrok-free.app';
+    this.baseURL = 'http://localhost:5000';
     this.predictEndpoint = '/predict';
     this.scannedUrls = new Set();
     this.isEnabled = true;
