@@ -369,6 +369,12 @@ document.addEventListener('DOMContentLoaded', function() {
     let listItems = [];
     let listOrdered = false;
 
+    function flushAll() {
+      flushList();
+      flushTable();
+    }
+
+
     function flushList() {
       if (!inList || listItems.length === 0) return;
       const tag = listOrdered ? 'ol' : 'ul';
@@ -379,7 +385,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function flushTable() {
-      if (!inTable || tableHtml === '') return;
+      if (!inTable) return;
       html += `<div class="bot-table-wrap"><table class="bot-table"><thead><tr>${tableHeaders.map(h => `<th>${inline(h)}</th>`).join('')}</tr></thead><tbody>${tableHtml}</tbody></table></div>`;
       tableHtml = '';
       tableHeaders = [];
@@ -388,20 +394,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function inline(t) {
       return t
-        // Verdict badges first (so they don't get broken by bold)
         .replace(/✅\s*/g, '<span class="badge badge-safe">✅ Safe</span> ')
         .replace(/⚠️\s*/g, '<span class="badge badge-warn">⚠️ Warning</span> ')
         .replace(/🚨\s*/g, '<span class="badge badge-danger">🚨 Danger</span> ')
         .replace(/⚪\s*/g, '<span class="badge badge-neutral">⚪ Neutral</span> ')
         .replace(/❌\s*/g, '<span class="badge badge-danger">❌ Failed</span> ')
-        // Bold
         .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
         .replace(/__(.*?)__/g, '<strong>$1</strong>')
-        // Italic
         .replace(/\*(.*?)\*/g, '<em>$1</em>')
-        // Inline code
         .replace(/`([^`]+)`/g, '<code class="inline-code">$1</code>')
-        // Links
         .replace(/\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
     }
 
@@ -409,51 +410,40 @@ document.addEventListener('DOMContentLoaded', function() {
       const line = lines[i];
       const trimmed = line.trim();
 
-      // Markdown table detection
+      // Markdown table detection — any line that starts AND ends with |
       if (trimmed.startsWith('|') && trimmed.endsWith('|')) {
         const cells = trimmed.slice(1, -1).split('|').map(c => c.trim());
-        const isSeparator = cells.every(c => /^[-:]+$/.test(c));
+        const isSeparator = cells.every(c => /^[-: ]+$/.test(c));
 
-        if (!inTable) {
-          flushList();
-          // This is the header row
-          tableHeaders = cells;
-          inTable = true;
+        if (isSeparator) {
+          // Separator row — skip it entirely
           i++;
-          // skip separator row
-          if (i < lines.length && lines[i].trim().startsWith('|') && lines[i].includes('---')) i++;
-          continue;
-        } else if (!isSeparator) {
-          tableHtml += `<tr>${cells.map(c => `<td>${inline(c)}</td>`).join('')}</tr>`;
-          i++;
-          continue;
-        } else {
-          i++; // skip separator
           continue;
         }
-      } else {
-        flushTable();
+
+        if (!inTable) {
+          // First real row = header row
+          flushList();
+          tableHeaders = cells;
+          inTable = true;
+        } else {
+          // Subsequent rows = body rows
+          tableHtml += `<tr>${cells.map(c => `<td>${inline(c)}</td>`).join('')}</tr>`;
+        }
+        i++;
+        continue;
       }
+
+      // Not a table line — flush any open table first
+      flushTable();
 
       // Headings
       const h3 = trimmed.match(/^###\s+(.*)/);
       const h2 = trimmed.match(/^##\s+(.*)/);
       const h1 = trimmed.match(/^#\s+(.*)/);
-      if (h3) {
-        flushList();
-        html += `<h4 class="bot-h3">${inline(h3[1])}</h4>`;
-        i++; continue;
-      }
-      if (h2) {
-        flushList();
-        html += `<h3 class="bot-h2">${inline(h2[1])}</h3>`;
-        i++; continue;
-      }
-      if (h1) {
-        flushList();
-        html += `<h2 class="bot-h1">${inline(h1[1])}</h2>`;
-        i++; continue;
-      }
+      if (h3) { flushList(); html += `<h4 class="bot-h3">${inline(h3[1])}</h4>`; i++; continue; }
+      if (h2) { flushList(); html += `<h3 class="bot-h2">${inline(h2[1])}</h3>`; i++; continue; }
+      if (h1) { flushList(); html += `<h2 class="bot-h1">${inline(h1[1])}</h2>`; i++; continue; }
 
       // Horizontal rule
       if (/^---+$/.test(trimmed)) {
@@ -478,27 +468,27 @@ document.addEventListener('DOMContentLoaded', function() {
         i++; continue;
       }
 
-      // Empty line — flush pending structures, paragraph break
+      // Empty line
       if (trimmed === '') {
-        flushList();
+        flushAll();
         html += `<div class="bot-spacer"></div>`;
         i++; continue;
       }
 
-      // Normal paragraph line
+      // Normal paragraph
       flushList();
       html += `<p class="bot-p">${inline(trimmed)}</p>`;
       i++;
     }
 
-    flushList();
-    flushTable();
+    flushAll();
 
     console.log('✅ Bot response formatted successfully');
     return html;
   }
 
   function setLoading(loading) {
+
     console.log(`⏳ Setting loading state: ${loading}`);
     
     if (loading) {
