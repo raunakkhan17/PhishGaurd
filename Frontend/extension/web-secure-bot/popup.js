@@ -358,60 +358,144 @@ document.addEventListener('DOMContentLoaded', function() {
       console.warn('⚠️ Empty text provided to formatBotResponse');
       return '<p>No response content</p>';
     }
-    
-    // Clean and format the text properly
-    let formatted = text
-      // Handle line breaks first
-      .replace(/\n\n+/g, '</p><p>')
-      .replace(/\n/g, '<br>')
-      
-      // Bold text between ** or __
-      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-      .replace(/__(.*?)__/g, '<strong>$1</strong>')
-      
-      // Italic text between * or _
-      .replace(/\*(.*?)\*/g, '<em>$1</em>')
-      .replace(/_(.*?)_/g, '<em>$1</em>')
-      
-      // Convert bullet points to proper HTML lists
-      .replace(/^\s*[\*\-•]\s*(.*)$/gm, '<li>$1</li>')
-      
-      // Convert numbered lists
-      .replace(/^\s*\d+\.\s*(.*)$/gm, '<li>$1</li>');
-    
-    // Handle lists properly
-    if (formatted.includes('<li>')) {
-      // Group consecutive list items
-      formatted = formatted.replace(/(<li>.*?<\/li>)(\s*<li>.*?<\/li>)*/gs, function(match) {
-        const items = match.match(/<li>.*?<\/li>/g);
-        if (items && items.length > 0) {
-          return '<ul>' + items.join('') + '</ul>';
-        }
-        return match;
-      });
+
+    let html = '';
+    const lines = text.split('\n');
+    let i = 0;
+    let inTable = false;
+    let tableHtml = '';
+    let tableHeaders = [];
+    let inList = false;
+    let listItems = [];
+    let listOrdered = false;
+
+    function flushList() {
+      if (!inList || listItems.length === 0) return;
+      const tag = listOrdered ? 'ol' : 'ul';
+      html += `<${tag} class="bot-list">${listItems.map(li => `<li>${li}</li>`).join('')}</${tag}>`;
+      listItems = [];
+      inList = false;
+      listOrdered = false;
     }
-    
-    // Split into paragraphs and wrap properly
-    const paragraphs = formatted.split('</p><p>');
-    let result = '';
-    
-    paragraphs.forEach((para, index) => {
-      if (para.trim()) {
-        if (index === 0) {
-          result += `<p>${para}`;
+
+    function flushTable() {
+      if (!inTable || tableHtml === '') return;
+      html += `<div class="bot-table-wrap"><table class="bot-table"><thead><tr>${tableHeaders.map(h => `<th>${inline(h)}</th>`).join('')}</tr></thead><tbody>${tableHtml}</tbody></table></div>`;
+      tableHtml = '';
+      tableHeaders = [];
+      inTable = false;
+    }
+
+    function inline(t) {
+      return t
+        // Verdict badges first (so they don't get broken by bold)
+        .replace(/✅\s*/g, '<span class="badge badge-safe">✅ Safe</span> ')
+        .replace(/⚠️\s*/g, '<span class="badge badge-warn">⚠️ Warning</span> ')
+        .replace(/🚨\s*/g, '<span class="badge badge-danger">🚨 Danger</span> ')
+        .replace(/⚪\s*/g, '<span class="badge badge-neutral">⚪ Neutral</span> ')
+        .replace(/❌\s*/g, '<span class="badge badge-danger">❌ Failed</span> ')
+        // Bold
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/__(.*?)__/g, '<strong>$1</strong>')
+        // Italic
+        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+        // Inline code
+        .replace(/`([^`]+)`/g, '<code class="inline-code">$1</code>')
+        // Links
+        .replace(/\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
+    }
+
+    while (i < lines.length) {
+      const line = lines[i];
+      const trimmed = line.trim();
+
+      // Markdown table detection
+      if (trimmed.startsWith('|') && trimmed.endsWith('|')) {
+        const cells = trimmed.slice(1, -1).split('|').map(c => c.trim());
+        const isSeparator = cells.every(c => /^[-:]+$/.test(c));
+
+        if (!inTable) {
+          flushList();
+          // This is the header row
+          tableHeaders = cells;
+          inTable = true;
+          i++;
+          // skip separator row
+          if (i < lines.length && lines[i].trim().startsWith('|') && lines[i].includes('---')) i++;
+          continue;
+        } else if (!isSeparator) {
+          tableHtml += `<tr>${cells.map(c => `<td>${inline(c)}</td>`).join('')}</tr>`;
+          i++;
+          continue;
         } else {
-          result += `</p><p>${para}`;
+          i++; // skip separator
+          continue;
         }
+      } else {
+        flushTable();
       }
-    });
-    
-    result += '</p>';
-    
-    // Clean up any empty paragraphs
-    result = result.replace(/<p>\s*<\/p>/g, '');
-    
+
+      // Headings
+      const h3 = trimmed.match(/^###\s+(.*)/);
+      const h2 = trimmed.match(/^##\s+(.*)/);
+      const h1 = trimmed.match(/^#\s+(.*)/);
+      if (h3) {
+        flushList();
+        html += `<h4 class="bot-h3">${inline(h3[1])}</h4>`;
+        i++; continue;
+      }
+      if (h2) {
+        flushList();
+        html += `<h3 class="bot-h2">${inline(h2[1])}</h3>`;
+        i++; continue;
+      }
+      if (h1) {
+        flushList();
+        html += `<h2 class="bot-h1">${inline(h1[1])}</h2>`;
+        i++; continue;
+      }
+
+      // Horizontal rule
+      if (/^---+$/.test(trimmed)) {
+        flushList();
+        html += `<hr class="bot-hr">`;
+        i++; continue;
+      }
+
+      // Ordered list
+      const olMatch = trimmed.match(/^\d+\.\s+(.*)/);
+      if (olMatch) {
+        if (!inList || !listOrdered) { flushList(); inList = true; listOrdered = true; }
+        listItems.push(inline(olMatch[1]));
+        i++; continue;
+      }
+
+      // Unordered list
+      const ulMatch = trimmed.match(/^[\*\-•]\s+(.*)/);
+      if (ulMatch) {
+        if (!inList || listOrdered) { flushList(); inList = true; listOrdered = false; }
+        listItems.push(inline(ulMatch[1]));
+        i++; continue;
+      }
+
+      // Empty line — flush pending structures, paragraph break
+      if (trimmed === '') {
+        flushList();
+        html += `<div class="bot-spacer"></div>`;
+        i++; continue;
+      }
+
+      // Normal paragraph line
+      flushList();
+      html += `<p class="bot-p">${inline(trimmed)}</p>`;
+      i++;
+    }
+
+    flushList();
+    flushTable();
+
     console.log('✅ Bot response formatted successfully');
-    return result;
+    return html;
   }
 
   function setLoading(loading) {

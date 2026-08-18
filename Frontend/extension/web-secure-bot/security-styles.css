@@ -156,7 +156,7 @@ body {
   border-color: #28a745;
   outline: none;
 }
-}
+
 
 .test-result {
   margin-top: 15px;
@@ -436,8 +436,13 @@ body {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* Error State */
@@ -614,8 +619,13 @@ body {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .btn-text {
@@ -652,25 +662,25 @@ body {
     flex-direction: column;
     gap: 15px;
   }
-  
+
   .nav-tabs {
     width: 100%;
     justify-content: center;
   }
-  
+
   .final-score-section {
     flex-direction: column;
     gap: 20px;
   }
-  
+
   .url-input-container {
     flex-direction: column;
   }
-  
+
   .layer-scores {
     grid-template-columns: 1fr;
   }
-  
+
   .scanner-header h1 {
     font-size: 2rem;
   }
@@ -726,9 +736,17 @@ body {
 }
 
 @keyframes pulse {
-  0% { opacity: 1; }
-  50% { opacity: 0.5; }
-  100% { opacity: 1; }
+  0% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
+
+  100% {
+    opacity: 1;
+  }
 }
 
 #monitor-status-text {
@@ -1104,14 +1122,195 @@ body {
     grid-template-columns: 1fr;
     gap: 20px;
   }
-  
+
   .debug-actions {
     flex-direction: column;
     align-items: center;
   }
-  
+
   .debug-btn {
     width: 100%;
     max-width: 200px;
   }
+}
+
+/* ============================================
+   RICH BOT RESPONSE STYLES
+   ============================================ */
+
+/* Increase chat box height for complex responses */
+.chat-container {
+  height: 420px !important;
+}
+
+/* Bot message outer wrapper */
+.bot-message {
+  max-width: 98%;
+}
+
+/* Headings inside bot responses */
+.bot-h1 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #3a3a6e;
+  margin: 14px 0 6px;
+  padding-bottom: 4px;
+  border-bottom: 2px solid #667eea;
+}
+
+.bot-h2 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #444;
+  margin: 12px 0 5px;
+  padding-left: 8px;
+  border-left: 3px solid #667eea;
+}
+
+.bot-h3 {
+  font-size: 0.97rem;
+  font-weight: 600;
+  color: #555;
+  margin: 10px 0 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+/* Regular paragraphs */
+.bot-p {
+  font-size: 0.88rem;
+  line-height: 1.6;
+  color: #333;
+  margin: 4px 0;
+}
+
+/* Horizontal rule */
+.bot-hr {
+  border: none;
+  border-top: 1px solid #dde;
+  margin: 10px 0;
+}
+
+/* Spacer between sections */
+.bot-spacer {
+  height: 6px;
+}
+
+/* Lists */
+.bot-list {
+  margin: 6px 0 6px 18px;
+  padding: 0;
+  font-size: 0.87rem;
+  color: #333;
+  line-height: 1.7;
+}
+
+.bot-list li {
+  margin-bottom: 3px;
+}
+
+/* Inline code */
+.inline-code {
+  background: #f0f0f8;
+  color: #764ba2;
+  font-family: 'Courier New', monospace;
+  font-size: 0.82rem;
+  padding: 1px 5px;
+  border-radius: 4px;
+  border: 1px solid #e0d8f0;
+  word-break: break-all;
+}
+
+/* Verdict Badges */
+.badge {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  vertical-align: middle;
+  white-space: nowrap;
+  margin: 0 2px;
+  line-height: 1.6;
+}
+
+.badge-safe {
+  background: #d4edda;
+  color: #155724;
+  border: 1px solid #b8dfc4;
+}
+
+.badge-warn {
+  background: #fff3cd;
+  color: #856404;
+  border: 1px solid #ffe08a;
+}
+
+.badge-danger {
+  background: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f3b8bb;
+}
+
+.badge-neutral {
+  background: #e9ecef;
+  color: #495057;
+  border: 1px solid #ced4da;
+}
+
+/* Markdown Tables */
+.bot-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  margin: 10px 0;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.bot-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.83rem;
+  background: #fff;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.bot-table thead {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.bot-table thead th {
+  padding: 9px 12px;
+  text-align: left;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+}
+
+.bot-table tbody tr {
+  border-bottom: 1px solid #eef0f3;
+  transition: background 0.15s;
+}
+
+.bot-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.bot-table tbody tr:hover {
+  background: #f5f5ff;
+}
+
+.bot-table td {
+  padding: 8px 12px;
+  color: #444;
+  vertical-align: top;
+  line-height: 1.5;
+}
+
+.bot-table td:first-child {
+  font-weight: 600;
+  color: #333;
+  white-space: nowrap;
 }
