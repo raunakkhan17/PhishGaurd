@@ -8,7 +8,7 @@
 ## 🌟 Core Features
 
 - 🔍 **Real-Time Website Detection**: Machine-learning powered URL scanner detecting phishing, typosquatting, and malicious domain variants.
-- 🤖 **RAG AI Security Chatbot**: Integrated Chrome Extension with local Retrieval-Augmented Generation (RAG) powered by **Groq Llama-3.3-70b**.
+- 🤖 **RAG AI Security Chatbot**: Integrated Chrome Extension with local Retrieval-Augmented Generation (RAG) powered by **groq/compound-mini**.
 - 📊 **Public Threat Directory**: Searchable repository of community-reported and verified malicious websites.
 - 🎓 **Educational Hub**: Comprehensive guides, tutorials, and security awareness articles on identifying social engineering attacks.
 - 💬 **Community Forums**: Collaborative platform for discussing cyber threats and reporting scam campaigns.
@@ -69,13 +69,18 @@ npm run dev       # Starts React web app on http://localhost:5173
 
 ---
 
-### 3. Chrome Security Extension & Chatbot
+### 3. Chrome Extensions Setup
 
-1. Open Google Chrome and navigate to `chrome://extensions/`
-2. Enable **Developer mode** in the top-right corner.
-3. Click **Load unpacked** and select the folder:
-   `Frontend/extension/web-secure-bot`
-4. Set your Groq API key in the extension background script or popup.
+PhishGuard includes **two browser extensions**:
+
+1. **Extension 1: Phishing Security Scanner (`Frontend/extension`)**
+   - Real-time overlay threat warnings, risk scoring, and `Ctrl+Shift+S` overlay shortcut.
+   - *To load*: Go to `chrome://extensions/` -> Enable **Developer mode** -> Click **Load unpacked** -> Select `Frontend/extension`.
+
+2. **Extension 2: Web Security Bot & Groq RAG AI (`Frontend/extension/web-secure-bot`)**
+   - Local IndexedDB vector RAG + Groq Llama 3.3 AI Chatbot for live website Q&A.
+   - *To load*: Click **Load unpacked** -> Select `Frontend/extension/web-secure-bot`.
+   - Set your Groq API key in `background.js` (line 6) or via the extension popup.
 
 ---
 
@@ -100,8 +105,9 @@ PhishGuard/
 │   └── seed.js                 # Database seed script
 ├── Frontend/
 │   ├── web/                    # React + Vite + Tailwind web application
-│   └── extension/
-│       └── web-secure-bot/     # Chrome Extension with Groq Llama RAG Chatbot
+│   └── extension/              # Extension 1: Phishing Security Scanner
+│       └── web-secure-bot/     # Extension 2: Groq Llama RAG AI Security Bot
+├── SETUP_GUIDE.md              # Detailed setup & troubleshooting guide
 ├── README.md                   # Project documentation
 └── .gitignore                  # Git ignore definitions
 ```
