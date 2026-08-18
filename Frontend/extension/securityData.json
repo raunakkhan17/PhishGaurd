@@ -1,0 +1,46 @@
+{
+  "layer1": {
+    "status": "Legitimate",
+    "reason": "The URL is from a well-known cryptocurrency exchange (Binance) and uses HTTPS",
+    "score": 9
+  },
+  "layer2": {
+    "threat_intel_analysis": {
+      "malicious": 0,
+      "suspicious": 0,
+      "harmless": 68,
+      "undetected": 29,
+      "redirects": "null",
+      "explanation": "No malicious or suspicious activity detected by threat intelligence engines"
+    },
+    "registration_analysis": {
+      "domain_age_days": 3055,
+      "registrar_reputation": "High",
+      "contact_email_type": "Business",
+      "name_authenticity": "Known",
+      "name_servers_reputation": "High",
+      "explanation": "The domain is registered with a reputable registrar and has a long age, indicating a low risk of phishing"
+    },
+    "summary": "The URL has a good reputation and the domain registration information indicates a low risk of phishing",
+    "score": 38
+  },
+  "layer3": {
+    "feature_analysis": {
+      "url_length": "The URL length is 156 characters, which is longer than average, but not excessively long",
+      "num_dots": "The URL contains 5 dots, which is average",
+      "has_at": "The URL does not contain the '@' symbol, which is a good sign",
+      "num_hyphens": "The URL contains 2 hyphens, which is average",
+      "num_digits": "The URL contains 12 digits, which is higher than average",
+      "is_https": "The URL uses HTTPS, which is a good sign",
+      "has_suspicious_words": "The URL does not contain suspicious words, such as 'login' or 'password'",
+      "has_suspicious_domain": "The domain 'binance.com' is not suspicious",
+      "domain_length": "The domain length is 10 characters, which is average"
+    },
+    "score": 45
+  },
+  "final_result": {
+    "final_score": 92,
+    "status": "Safe",
+    "reasoning": "The URL has a good reputation, the domain registration information indicates a low risk of phishing, and the feature analysis does not indicate any suspicious characteristics"
+  }
+}

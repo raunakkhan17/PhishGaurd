@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Security Scanner Test Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        .test-button:hover {
+            background: #0056b3;
+        }
+        .debug-info {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .status.success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .status.error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .status.info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+    </style>
+</head>
+<body>
+    <h1>🔒 Security Scanner Extension Test Page</h1>
+    
+    <div class="test-section">
+        <h2>Extension Status</h2>
+        <div id="extension-status" class="status info">Checking extension status...</div>
+        <button class="test-button" onclick="checkExtensionStatus()">Check Extension Status</button>
+    </div>
+
+    <div class="test-section">
+        <h2>Test Security Scan</h2>
+        <p>This page will be scanned for security threats. The results should appear automatically after 10 seconds, or you can trigger them manually.</p>
+        <button class="test-button" onclick="testSecurityScan()">Test Security Scan</button>
+        <button class="test-button" onclick="testWithSampleData()">Test with Sample Data</button>
+        <button class="test-button" onclick="debugData()">🐛 Debug Data</button>
+    </div>
+
+    <div class="test-section">
+        <h2>Debug Information</h2>
+        <div id="debug-output" class="debug-info">No debug information yet...</div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Manual Test</h2>
+        <p>Test the extension manually:</p>
+        <ol>
+            <li>Make sure the extension is installed and enabled</li>
+            <li>Press <strong>Ctrl+Shift+S</strong> to toggle the security overlay</li>
+            <li>Check the browser console for any error messages</li>
+            <li>Look for the security overlay to appear</li>
+        </ol>
+    </div>
+    
+    <script>
+        // Check if extension is available
+        function checkExtensionStatus() {
+            const statusDiv = document.getElementById('extension-status');
+            const debugDiv = document.getElementById('debug-output');
+            
+            if (typeof chrome !== 'undefined' && chrome.runtime) {
+                statusDiv.className = 'status success';
+                statusDiv.textContent = '✅ Extension detected and available';
+                
+                // Try to get extension status
+                chrome.runtime.sendMessage({ type: 'GET_STATUS' }, (response) => {
+                    if (chrome.runtime.lastError) {
+                        debugDiv.textContent = 'Error getting status: ' + chrome.runtime.lastError.message;
+                    } else if (response) {
+                        debugDiv.textContent = 'Extension Status:\n' + JSON.stringify(response, null, 2);
+                    } else {
+                        debugDiv.textContent = 'No response from extension';
+                    }
+                });
+            } else {
+                statusDiv.className = 'status error';
+                statusDiv.textContent = '❌ Extension not detected';
+                debugDiv.textContent = 'Chrome extension API not available';
+            }
+        }
+
+        // Test security scan
+        function testSecurityScan() {
+            const debugDiv = document.getElementById('debug-output');
+            debugDiv.textContent = 'Testing security scan...';
+            
+            if (typeof chrome !== 'undefined' && chrome.runtime) {
+                chrome.runtime.sendMessage({ type: 'MANUAL_SCAN', url: window.location.href }, (response) => {
+                    if (chrome.runtime.lastError) {
+                        debugDiv.textContent = 'Error: ' + chrome.runtime.lastError.message;
+                    } else if (response && response.success) {
+                        debugDiv.textContent = '✅ Manual scan initiated successfully';
+                    } else {
+                        debugDiv.textContent = '❌ Manual scan failed: ' + (response ? response.error : 'Unknown error');
+                    }
+                });
+            } else {
+                debugDiv.textContent = '❌ Extension not available';
+            }
+        }
+
+        // Test with sample data
+        function testWithSampleData() {
+            const debugDiv = document.getElementById('debug-output');
+            debugDiv.textContent = 'Testing with sample data...';
+            
+            if (typeof chrome !== 'undefined' && chrome.runtime) {
+                chrome.runtime.sendMessage({ type: 'TEST_API', url: window.location.href }, (response) => {
+                    if (chrome.runtime.lastError) {
+                        debugDiv.textContent = 'Error: ' + chrome.runtime.lastError.message;
+                    } else if (response && response.success) {
+                        debugDiv.textContent = '✅ Sample data test initiated successfully';
+                    } else {
+                        debugDiv.textContent = '❌ Sample data test failed: ' + (response ? response.error : 'Unknown error');
+                    }
+                });
+            } else {
+                debugDiv.textContent = '❌ Extension not available';
+            }
+        }
+
+        // Debug data
+        function debugData() {
+            const debugDiv = document.getElementById('debug-output');
+            debugDiv.textContent = 'Debugging data...';
+            
+            if (typeof chrome !== 'undefined' && chrome.runtime) {
+                chrome.runtime.sendMessage({ type: 'DEBUG_DATA', url: window.location.href }, (response) => {
+                    if (chrome.runtime.lastError) {
+                        debugDiv.textContent = 'Error: ' + chrome.runtime.lastError.message;
+                    } else if (response && response.success) {
+                        debugDiv.textContent = '✅ Debug data sent to console. Check the browser console for detailed information.';
+                    } else {
+                        debugDiv.textContent = '❌ Debug failed: ' + (response ? response.error : 'Unknown error');
+                    }
+                });
+            } else {
+                debugDiv.textContent = '❌ Extension not available';
+            }
+        }
+
+        // Auto-check extension status when page loads
+        window.addEventListener('load', () => {
+            setTimeout(checkExtensionStatus, 1000);
+        });
+
+        // Listen for messages from the extension
+        if (typeof chrome !== 'undefined' && chrome.runtime) {
+            chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+                console.log('Test page received message:', request);
+                if (request.type === 'SHOW_SECURITY_RESULTS') {
+                    document.getElementById('debug-output').textContent = 
+                        'Security results received:\n' + JSON.stringify(request.data, null, 2);
+                }
+            });
+        }
+    </script>
+</body>
+</html>

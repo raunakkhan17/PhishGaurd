@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Web Security Scanner</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="security-styles.css" />
+</head>
+<body>
+  <!-- Top Navigation Bar -->
+  <div class="nav-bar">
+    <div class="nav-container">
+      <div class="nav-logo">
+        🛡️ Web Security Bot
+      </div>
+      <div class="nav-tabs">
+        <button class="nav-tab active" id="security-tab">
+          🔍 Security Scanner
+        </button>
+        <button class="nav-tab" id="monitor-tab">
+          📡 Background Monitor
+        </button>
+        <button class="nav-tab" id="chat-tab">
+          💬 Chat Bot
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Security Scanner Screen (Default) -->
+  <div id="security-scanner" class="screen active">
+    <div class="scanner-header">
+      <h1>🔍 Website Security Scanner</h1>
+      <p>Automatically scan websites for security threats and get detailed analysis</p>
+    </div>
+
+    <!-- API Test Section -->
+    <div class="test-section">
+      <h3>🧪 API Connection Test</h3>
+      <button id="test-api-btn" class="test-btn">
+        Test API Connection
+      </button>
+      <div id="test-result" class="test-result"></div>
+    </div>
+
+    <!-- Manual URL Scanner -->
+    <div class="manual-scanner">
+      <h3>🔗 Manual URL Scanner</h3>
+      <div class="url-input-container">
+        <input 
+          type="url" 
+          id="url-input" 
+          placeholder="Enter website URL (e.g., https://example.com)"
+          class="url-input"
+        />
+        <button id="scan-btn" class="scan-btn">
+          🔍 Scan Website
+        </button>
+      </div>
+    </div>
+
+    <!-- Security Results Display -->
+    <div id="security-results" class="security-results hidden">
+      <!-- Final Score Display -->
+      <div class="final-score-section">
+        <div class="score-circle" id="score-circle">
+          <div class="score-number" id="score-number">0</div>
+          <div class="score-label">Security Score</div>
+        </div>
+        <div class="score-status" id="score-status">
+          <div class="status-text" id="status-text">Unknown</div>
+          <div class="status-reason" id="status-reason">No data available</div>
+        </div>
+      </div>
+
+      <!-- Layer Scores -->
+      <div class="layer-scores">
+        <div class="layer-card">
+          <h4>🛡️ Layer 1: LLM Classification</h4>
+          <div class="layer-score" id="layer1-score">0</div>
+          <div class="layer-status" id="layer1-status">Unknown</div>
+          <div class="layer-reason" id="layer1-reason">No data</div>
+        </div>
+
+        <div class="layer-card">
+          <h4>🔒 Layer 2: Threat Intelligence & Domain Analysis</h4>
+          <div class="score-number" id="layer2-score">0</div>
+          <div class="layer-status" id="layer2-status">No data</div>
+          <div class="layer-reason" id="layer2-reason">No data</div>
+        </div>
+
+        <div class="layer-card">
+          <h4>🔍 Layer 3: Feature Analysis</h4>
+          <div class="score-number" id="layer3-score">0</div>
+          <div class="layer-status" id="layer3-status">No data</div>
+          <div class="layer-reason" id="layer3-reason">No data</div>
+        </div>
+      </div>
+
+      <!-- Detailed Analysis -->
+      <div class="detailed-analysis">
+        <h3>📊 Detailed Security Analysis</h3>
+        <div id="analysis-content" class="analysis-content">
+          <!-- Content will be populated dynamically -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div id="loading-state" class="loading-state hidden">
+      <div class="spinner"></div>
+      <p>🔍 Scanning website security...</p>
+    </div>
+
+    <!-- Error State -->
+    <div id="error-state" class="error-state hidden">
+      <div class="error-icon">❌</div>
+      <h3>Scan Failed</h3>
+      <p id="error-message">An error occurred while scanning the website.</p>
+      <button class="retry-btn" id="retry-btn">🔄 Retry</button>
+    </div>
+  </div>
+
+  <!-- Background Monitor Screen (NEW) -->
+  <div id="background-monitor" class="screen">
+    <div class="monitor-header">
+      <h1>📡 Background Security Monitor</h1>
+      <p>Real-time monitoring of websites you visit - see API calls and responses live!</p>
+    </div>
+
+    <!-- Monitor Status -->
+    <div class="monitor-status">
+      <div class="status-indicator">
+        <div class="status-dot" id="monitor-dot"></div>
+        <span id="monitor-status-text">Monitoring Active</span>
+      </div>
+      <button id="toggle-monitor-btn" class="toggle-btn">
+        🛑 Stop Monitoring
+      </button>
+    </div>
+
+    <!-- Live Activity Feed -->
+    <div class="activity-feed">
+      <h3>🔄 Live Activity Feed</h3>
+      <div class="feed-container" id="feed-container">
+        <div class="feed-item info">
+          <div class="feed-icon">ℹ️</div>
+          <div class="feed-content">
+            <div class="feed-title">Background Monitor Started</div>
+            <div class="feed-desc">Watching for new websites to scan automatically</div>
+            <div class="feed-time" id="start-time"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Current Website Info -->
+    <div class="current-website">
+      <h3>🌐 Current Website</h3>
+      <div class="website-info" id="current-website-info">
+        <div class="website-url">No website detected</div>
+        <div class="website-status">Waiting for navigation...</div>
+      </div>
+    </div>
+
+    <!-- Recent Scans -->
+    <div class="recent-scans">
+      <h3>📋 Recent Security Scans</h3>
+      <div class="scans-container" id="scans-container">
+        <div class="no-scans">No scans performed yet</div>
+      </div>
+    </div>
+
+    <!-- Test Instructions -->
+    <div class="test-instructions">
+      <h3>🧪 How to Test Background Monitoring</h3>
+      <div class="instructions-content">
+        <ol>
+          <li><strong>Keep this extension open</strong> in a separate window</li>
+          <li><strong>Open a new tab</strong> and visit any website</li>
+          <li><strong>Watch this screen</strong> - you'll see the API call happen automatically</li>
+          <li><strong>Check the website</strong> - security overlay will appear if needed</li>
+          <li><strong>Return here</strong> to see the scan results</li>
+        </ol>
+        <div class="test-websites">
+          <strong>Test Websites:</strong>
+          <ul>
+            <li><a href="https://google.com" target="_blank">google.com</a> (Safe)</li>
+            <li><a href="https://github.com" target="_blank">github.com</a> (Safe)</li>
+            <li><a href="https://example.com" target="_blank">example.com</a> (Safe)</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Debug Panel (NEW) -->
+    <div class="debug-panel">
+      <h3>🐛 Debug Information</h3>
+      <div class="debug-content">
+        <div class="debug-section">
+          <h4>📡 API Status</h4>
+          <div class="debug-item">
+            <span class="debug-label">Base URL:</span>
+            <span class="debug-value" id="debug-base-url">https://fade1e629530.ngrok-free.app</span>
+          </div>
+          <div class="debug-item">
+            <span class="debug-label">Last API Call:</span>
+            <span class="debug-value" id="debug-last-call">None</span>
+          </div>
+          <div class="debug-item">
+            <span class="debug-label">Last Response:</span>
+            <span class="debug-value" id="debug-last-response">None</span>
+          </div>
+        </div>
+        
+        <div class="debug-section">
+          <h4>🔍 Monitoring Status</h4>
+          <div class="debug-item">
+            <span class="debug-label">Background Monitoring:</span>
+            <span class="debug-value" id="debug-monitoring-status">Active</span>
+          </div>
+          <div class="debug-item">
+            <span class="debug-label">Active Tab:</span>
+            <span class="debug-value" id="debug-active-tab">None</span>
+          </div>
+          <div class="debug-item">
+            <span class="debug-label">Total Scans:</span>
+            <span class="debug-value" id="debug-total-scans">0</span>
+          </div>
+        </div>
+
+        <div class="debug-actions">
+          <button class="debug-btn" id="clear-logs-btn">🗑️ Clear Logs</button>
+          <button class="debug-btn" id="export-data-btn">📥 Export Debug Data</button>
+          <button class="debug-btn" id="test-bg-api-btn">🧪 Test Background API</button>
+          <button class="debug-btn" id="test-json-btn">📋 Test New JSON Structure</button>
+          <button class="debug-btn" id="test-rag-btn">🧠 Test RAG Service</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chat Bot Screen (Hidden by default) -->
+  <div id="chat-bot" class="screen">
+    <div class="chat-header">
+      <h1>💬 Security Chat Bot</h1>
+      <p>Ask questions about website security and get AI-powered answers</p>
+    </div>
+    
+    <div id="chat" class="chat-container"></div>
+    
+    <div class="input-container">
+      <input id="question" type="text" placeholder="Ask about this site's security..." maxlength="500" />
+      <button id="send" class="send-btn">
+        <span class="btn-text">Send</span>
+        <div class="loader" id="loader" style="display: none;"></div>
+      </button>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="security-api.js"></script>
+  <script src="rag-service.js"></script>
+  <script src="popup.js"></script>
+  <script src="security-scanner.js"></script>
+</body>
+</html>

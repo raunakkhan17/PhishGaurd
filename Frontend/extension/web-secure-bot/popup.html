@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Web Security Bot</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="header">
+    <h3>🛡️ Web Security Bot</h3>
+    <div class="status" id="status">Ready</div>
+  </div>
+  
+  <div id="chat" class="chat-container"></div>
+  
+  <div class="input-container">
+    <input id="question" type="text" placeholder="Ask about this site's security..." maxlength="500" />
+    <button id="send" class="send-btn">
+      <span class="btn-text">Send</span>
+      <div class="loader" id="loader" style="display: none;"></div>
+    </button>
+  </div>
+  
+  <script src="rag-service.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>
