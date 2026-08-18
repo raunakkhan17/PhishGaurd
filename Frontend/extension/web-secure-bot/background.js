@@ -5,7 +5,7 @@
 
 let GROQ_API_KEY = "YOUR_GROQ_API_KEY_HERE";
 const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
-const GROQ_MODEL = "llama-3.3-70b-versatile";
+const GROQ_MODEL = "groq/compound-mini";
 
 // ============================================
 // STATE MANAGEMENT
