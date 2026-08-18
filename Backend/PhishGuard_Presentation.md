@@ -1,5 +1,4 @@
 # PhishGuard — 7-Minute Presentation Script
-### Team HGC | Prakhar Madharia · Raj Bhardwaj · Rahul Issar · Jai Kumar
 
 ---
 

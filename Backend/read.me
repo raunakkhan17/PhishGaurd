@@ -2,17 +2,6 @@
 
 A Real-time Multi-Layer Phishing Detection Engine + User Platform.  
 
----
-
-## 👨‍💻 Team Details  
-- **Team Name**: HGC  
-- **Team Members**:  
-  - Prakhar Madharia  
-  - Raj Bhardwaj  
-  - Rahul Issar  
-  - Jai Kumar  
-
----
 
 ## ❓ Problem Statement  
 Phishing websites are one of the most common online threats, tricking users into sharing sensitive data like passwords, credit card details, or banking credentials.  
