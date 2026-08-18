@@ -10,12 +10,9 @@ export default defineConfig({
   server: {
     proxy: {
       '/predict': {
-        target: 'https://27f9-2405-201-3032-8ea-5e5-4cf8-2d6f-96ce.ngrok-free.app',
+        target: 'http://localhost:5000',
         changeOrigin: true,
         secure: false,
-        headers: {
-          'ngrok-skip-browser-warning': 'true',
-        },
       },
     },
   },

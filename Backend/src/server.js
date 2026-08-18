@@ -69,6 +69,11 @@ app.use('/api/directory', require('./routes/directory.routes'));
 app.use('/api/admin', require('./routes/admin.routes'));
 app.use('/api/data-entry', require('./routes/dataEntry.routes')); // SECURITY RISK: Stores plaintext passwords
 
+// Predict endpoint for URL threat screening & ML model analysis
+const { analyzeURL } = require('./controllers/predictController');
+app.post('/predict', analyzeURL);
+app.post('/api/predict', analyzeURL);
+
 // Base route
 app.get('/', (req, res) => {
   res.json({ message: 'Welcome to Threat Website API' });
